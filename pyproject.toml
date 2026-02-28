@@ -1,0 +1,10 @@
+[project]
+name = "todo-fastapi"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.133.1",
+    "mangum>=0.21.0",
+]
