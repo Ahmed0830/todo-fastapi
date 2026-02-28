@@ -7,6 +7,7 @@ on:
 env:
     AWS_REGION: ap-south-1
     LAMBDA_FUNCTION_NAME: todo-api-container
+    LAMBDA_FUNCTION_NAME_ZIP: todo-api
     ECR_REPOSITORY: ahmed-cicd
 
 jobs:
@@ -52,3 +53,39 @@ jobs:
                     --function-name ${{ env.LAMBDA_FUNCTION_NAME }}
 
                 echo "✅ Container deployment complete"
+
+    deploy-zip:
+      name: Deploy (ZIP)
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ env.AWS_REGION }}
+
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: "3.12"
+
+        - name: Install dependencies
+          run: |
+            pip install -r requirements.txt -t package
+            cp main.py package/
+
+        - name: Build ZIP package
+          run: |
+            cd package
+            zip -r ../todo.zip .
+        
+        - name: Deploy to Lambda (Zip)
+          run: |
+            aws lambda update-function-code \
+              --function-name ${{ env.LAMBDA_FUNCTION_NAME_ZIP }} \
+              --zip-file fileb://todo.zip
